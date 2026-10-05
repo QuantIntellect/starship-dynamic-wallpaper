@@ -1,0 +1,68 @@
+name: Assemble release downloads
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Draft release tag containing verified transfer parts
+        required: true
+        default: v1.0.0
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_TAG: ${{ inputs.tag }}
+    steps:
+      - name: Download transfer parts from the draft release
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = true
+          mkdir transfer assembled
+          gh release download "$RELEASE_TAG" --pattern "_transfer-$RELEASE_TAG-*" --dir transfer
+      - name: Reassemble and verify the original files
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re, zipfile
+          tag = os.environ['RELEASE_TAG']
+          root = pathlib.Path('transfer')
+          manifest = json.loads((root / f'_transfer-{tag}-manifest.json').read_text())
+          filename = f'Starship-Dynamic-Wallpaper-{tag}.zip'
+          assert manifest['filename'] == filename
+          output = pathlib.Path('assembled') / filename
+          with output.open('wb') as dest:
+              for index, part in enumerate(manifest['parts']):
+                  assert part['name'] == f'_transfer-{tag}-{index:03d}.part'
+                  data = (root / part['name']).read_bytes()
+                  assert len(data) == part['size']
+                  assert hashlib.sha256(data).hexdigest() == part['sha256']
+                  dest.write(data)
+          assert output.stat().st_size == manifest['size']
+          assert hashlib.sha256(output.read_bytes()).hexdigest() == manifest['sha256']
+          with zipfile.ZipFile(output) as pack:
+              assert pack.testzip() is None
+              checks = pack.read('Starship-Dynamic-Wallpaper/SHA256SUMS.txt').decode()
+              expected = {}
+              for line in checks.strip().splitlines():
+                  digest, name = line.split('  ', 1)
+                  assert re.fullmatch(r'[0-9a-f]{64}', digest)
+                  expected[name] = digest
+              assert set(expected) == {'Launch-Solar-HDR.heic', 'Launch-Day-Cycle-HDR.heic'}
+              for name, digest in expected.items():
+                  data = pack.read('Starship-Dynamic-Wallpaper/' + name)
+                  assert hashlib.sha256(data).hexdigest() == digest
+                  if name == 'Launch-Day-Cycle-HDR.heic':
+                      (pathlib.Path('assembled') / name).write_bytes(data)
+          for path in pathlib.Path('assembled').iterdir():
+              print(hashlib.sha256(path.read_bytes()).hexdigest(), path.name)
+          PY
+      - name: Attach complete files to the draft
+        run: |
+          gh release upload "$RELEASE_TAG" assembled/Launch-Day-Cycle-HDR.heic
+          gh release upload "$RELEASE_TAG" "assembled/Starship-Dynamic-Wallpaper-$RELEASE_TAG.zip"
