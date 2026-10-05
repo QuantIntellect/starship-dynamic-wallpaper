@@ -1,3 +1,3 @@
 a40c467f90b6372f35f0e0c5bc259ef5af0460c638faae17a29ca1e8b3bbb5d7  Launch-Solar-HDR.heic
 b4def7f7379d79b80440e81658f411af64fb90b2baeb0b62c966a96811867f31  Launch-Day-Cycle-HDR.heic
-10a3e583150417ace3c91538559ae7c2509e53c1c445c2ba583d2a71dc2eb764  Starship-Dynamic-Wallpaper-v1.0.0.zip
+3a8fc628dae5e24ed5cd201902a387a2c90e44f9f1766393f62bd31fb94f1bc1  Starship-Dynamic-Wallpaper-v1.0.0.zip
