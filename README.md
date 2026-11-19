@@ -91,7 +91,7 @@ See [verification details](docs/verification.md) for the checks and their limits
 
 ## Credits and license
 
-Photograph credited to **[SpaceX](https://x.com/SpaceX)**. Wallpaper grading, HDR treatment, and packaging by **[QuantIntellect](https://github.com/QuantIntellect)**. [Image attribution and rights](IMAGE-CREDITS.md).
+Photograph: **SpaceX**, from its post ["Liftoff of Starship's first orbital flight"](https://x.com/SpaceX/status/2104654998034690329) (Starship Flight 14, September 28, 2026). Wallpaper grading, HDR treatment, and packaging by **[QuantIntellect](https://github.com/QuantIntellect)**. [Image attribution and rights](IMAGE-CREDITS.md).
 
 Source code and documentation: [MIT](LICENSE). The image assets are excluded from that license. This is an independent project with no SpaceX or Apple affiliation.
 
